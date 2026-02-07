@@ -1,30 +1,22 @@
 services:
-  # Main Erigon service
   - type: web
     name: polygon-erigon-live
     env: docker
-    region: oregon # Options: oregon, frankfurt, singapore, ohio
-    plan: standard # $25/month - needed for persistent disk
+    region: oregon
+    plan: standard
     
-    # Disk configuration (persistent storage)
     disk:
       name: erigon-data
       mountPath: /data
-      sizeGB: 20 # Start with 20GB
+      sizeGB: 20
     
-    # Environment variables
     envVars:
       - key: PORT
         value: 8545
       - key: ERIGON_CHAIN
         value: bor-mainnet
     
-    # Health check endpoint
     healthCheckPath: /
-    
-    # Auto-deploy settings
     autoDeploy: true
-    
-    # Build configuration
     dockerfilePath: ./Dockerfile
     dockerContext: ./

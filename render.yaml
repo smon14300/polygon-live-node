@@ -1,9 +1,34 @@
 services:
+  # Main Erigon service
   - type: web
-    name: polygon-live-node
-    runtime: docker
-    dockerfilePath: ./Dockerfile
+    name: polygon-erigon-live
+    env: docker
+    region: oregon # Choose: oregon, frankfurt, singapore, ohio
+    plan: standard # $25/month - needed for persistent disk
+    
+    # Disk configuration (persistent storage)
+    disk:
+      name: erigon-data
+      mountPath: /data
+      sizeGB: 20 # Start with 20GB, can expand later
+    
+    # Environment variables
     envVars:
       - key: PORT
         value: 8545
+      - key: ERIGON_CHAIN
+        value: bor-mainnet
+    
+    # Health check endpoint
+    healthCheckPath: /
+    
+    # Auto-deploy settings
     autoDeploy: true
+    
+    # Build configuration
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./
+    
+    # Service will be available at:
+    # https://polygon-erigon-live.onrender.com (HTTP RPC)
+    # wss://polygon-erigon-live.onrender.com (WebSocket)

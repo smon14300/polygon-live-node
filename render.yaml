@@ -3,14 +3,14 @@ services:
   - type: web
     name: polygon-erigon-live
     env: docker
-    region: oregon # Choose: oregon, frankfurt, singapore, ohio
+    region: oregon # Options: oregon, frankfurt, singapore, ohio
     plan: standard # $25/month - needed for persistent disk
     
     # Disk configuration (persistent storage)
     disk:
       name: erigon-data
       mountPath: /data
-      sizeGB: 20 # Start with 20GB, can expand later
+      sizeGB: 20 # Start with 20GB
     
     # Environment variables
     envVars:
@@ -28,7 +28,3 @@ services:
     # Build configuration
     dockerfilePath: ./Dockerfile
     dockerContext: ./
-    
-    # Service will be available at:
-    # https://polygon-erigon-live.onrender.com (HTTP RPC)
-    # wss://polygon-erigon-live.onrender.com (WebSocket)

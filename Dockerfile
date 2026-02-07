@@ -35,17 +35,16 @@ RUN echo '[\n\
 ]' > /data/static-nodes.json
 
 # Expose ports
-# 8545 = HTTP RPC
-# 8546 = WebSocket
+# 8545 = HTTP RPC + WebSocket (same port in new Erigon)
 # 30303 = P2P (TCP and UDP)
-EXPOSE 8545 8546 30303 30303/udp
+EXPOSE 8545 30303 30303/udp
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
   CMD curl -f http://localhost:8545 -X POST -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' || exit 1
 
-# Start Erigon with optimized flags for live data only
+# Start Erigon with CORRECTED flags for new version
 CMD ["erigon", \
      "--chain=bor-mainnet", \
      "--datadir=/data", \
@@ -56,16 +55,12 @@ CMD ["erigon", \
      "--http.vhosts=*", \
      "--http.corsdomain=*", \
      "--ws", \
-     "--ws.addr=0.0.0.0", \
-     "--ws.port=8546", \
-     "--ws.api=eth,net,web3,txpool,debug,trace", \
-     "--ws.origins=*", \
      "--maxpeers=100", \
      "--bor.withoutheimdall=true", \
-     "--nat=extip:0.0.0.0", \
+     "--nat=any", \
      "--port=30303", \
      "--authrpc.port=8551", \
-     "--snap.stop", \
+     "--snapshots=false", \
      "--torrent.download.rate=0", \
      "--torrent.upload.rate=0", \
      "--prune=htc", \

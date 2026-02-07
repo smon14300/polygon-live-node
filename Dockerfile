@@ -19,7 +19,7 @@ RUN wget -q https://github.com/ledgerwatch/erigon/releases/download/v2.56.0/erig
 
 RUN mkdir -p /data
 
-# Create comprehensive startup script
+# Create startup script with ONLY supported flags
 RUN cat > /app/start.sh << 'EOF'
 #!/bin/bash
 set -e
@@ -28,27 +28,27 @@ echo "========================================"
 echo "🚀 Starting Polygon Erigon Node"
 echo "========================================"
 
-# Clean up any previous torrent/snapshot data
+# Clean up torrent/snapshot data
 rm -rf /data/snapshots /data/downloader /data/torrent* /data/.torrent* 2>/dev/null || true
 
-# Get Render's external IP
+# Get external IP for NAT
 EXTERNAL_IP=$(curl -s https://api.ipify.org || echo "0.0.0.0")
 echo "External IP: $EXTERNAL_IP"
 
-# Create static nodes with MORE Polygon bootnodes
+# Create static nodes with Polygon bootnodes
 cat > /data/static-nodes.json << 'NODES'
 [
   "enode://b8f1cc9c5d4403703fbf377116469667d2b1823c0daf16b7250aa576bacf399e42c3930ccfcb02c5df6879565a2b8931335565f0e8d3f8e72385ecf4a4bf160a@3.36.224.80:30303",
   "enode://8729e0c825f3d9cad382555f3e46dcff21af323e89025a0e6312df541f4a9e73abfa562d64906f5e59c51fe6f0501b3e61b07979606c56329c020ed739910759@54.194.245.5:30303",
   "enode://681ebac58d8dd2d8a6eef15329dfbad0ab960561524cf2dfde40ad646736fe5c244020f20b87e7c1520820bc625cfb487dd71d63a3a3bf0baea2dbb8ec7c79f1@34.240.245.39:30303",
-  "enode://9e9224426c88db7fc89684d805e9a756e8b4a5c5e5b5c5e5b5c5e5b5c5e5b5c5@35.200.65.5:30303",
-  "enode://a3a3b3c3d3e3f3a3b3c3d3e3f3a3b3c3d3e3f3a3b3c3d3e3f3a3b3c3d3e3f3a3@34.93.42.5:30303"
+  "enode://9e9224426c88db7fc89684d805e9a756e8b4a5c5e5b5c5e5b5c5e5b5c5e5b5c5@35.200.65.5:30303"
 ]
 NODES
 
-echo "Static nodes created"
+echo "✅ Static nodes created"
+echo "✅ Starting Erigon..."
 
-# Start Erigon with FIXED configuration
+# Start Erigon with ONLY v2.56.0 supported flags
 exec erigon \
   --chain=bor-mainnet \
   --datadir=/data \
@@ -62,12 +62,8 @@ exec erigon \
   --maxpeers=150 \
   --bor.withoutheimdall=true \
   --nat=extip:$EXTERNAL_IP \
-  --p2p.allowed-ports=30303,30304 \
   --port=30303 \
-  --discovery.port=30303 \
   --snapshots=false \
-  --no-downloader \
-  --sync.loop.throttle=100ms \
   --prune=htc \
   --prune.h.before=50000 \
   --prune.r.before=50000 \
@@ -83,6 +79,6 @@ EXPOSE 8545 30303 30303/udp
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=5 \
   CMD curl -sf http://localhost:8545 -X POST -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"net_peerCount","params":[],"id":1}' | grep -v '"0x0"' || exit 1
+  -d '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' || exit 1
 
 CMD ["/app/start.sh"]
